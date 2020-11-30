@@ -87,10 +87,10 @@ double getTSCTicksPerNanosecond() {
     std::cout << "It took this amount of time in nanoseconds to complete " << sleep_time << "ms sleep: " << qpcDuration << std::endl;
 
     //Calculate TSC ticks per nanosecond
-    auto ticks_per_sec = (double)deltaTSC / qpcDuration;
-    std::cout << "TSC ticks per nanosecond is: " << ticks_per_sec << "/ns" << std::endl;
+    auto ticks_per_ns = (double)deltaTSC / qpcDuration;
+    std::cout << "TSC ticks per nanosecond is: " << ticks_per_ns << "/ns" << std::endl;
 
-    return ticks_per_sec;
+    return ticks_per_ns;
 }
 
 
