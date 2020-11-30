@@ -241,10 +241,18 @@ int main(){
     for (int this_core = 0; this_core < processor_count; this_core++) {
         for (int that_core = 0; that_core < processor_count; that_core++) {
             if (this_core != that_core) {
+#ifdef _WIN32
+                pinned_two_workers(this_core, that_core);
+#elif __linux__
                 pinned_two_workers_std(this_core, that_core);
+#endif
             }
             else {
+#ifdef _WIN32
+                pinned_worker(this_core); 
+#elif __linux__
                 pinned_worker_std(this_core);
+#endif
             }
         }
     }
