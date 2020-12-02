@@ -1,0 +1,72 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "g++-10.1 gdb build for dbg",
+            "command": "/usr/local/gcc-10.1.0/bin/g++-10.1",
+            "args": [
+                "-pthread",
+                "-Wall",
+                "-std=c++20",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "/usr/bin"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Generated task by Debugger"
+        },
+
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++ build active file",
+            "command": "/usr/local/gcc-10.1.0/bin/g++-10.1",
+            "args": [
+                "-pthread",
+                "-Wall",
+                "-std=c++20",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "/usr/bin"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Generated task by Debugger"
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: gcc-10.1 build active file",
+            "command": "/usr/local/gcc-10.1.0/bin/gcc-10.1",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-lpthread"
+            ],
+            "options": {
+                "cwd": "/usr/local/gcc-10.1.0/bin"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Generated task by Debugger"
+        }
+    ],
+    "version": "2.0.0"
+}
