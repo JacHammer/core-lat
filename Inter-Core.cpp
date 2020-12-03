@@ -2,11 +2,13 @@
 //
 
 #include <iostream>
+#include <iomanip>
 #include <chrono>
 #include <thread>
 #include <atomic>
 #include <future>
 #include <mutex>
+#include <vector>
 
 // const int iterations = 100000000;  // old value
 const int iterations = 100000000;
@@ -148,23 +150,27 @@ long long measureLatency(int core) {
 auto ticksPerNanosecond = getTSCTicksPerNanosecond();
 
 
-void pinned_worker(int pinned_core) {
+void pinned_worker(int pinned_core, std::vector<std::vector<double>>& latency_matrix) {
     std::mutex stream_mutex;
     set_affinity(pinned_core);
-    long long time;
+    double time;
     time = testSingleCore();
+    time = time / iterations / ticksPerNanosecond * 1.0;
     const std::lock_guard<std::mutex> lock(stream_mutex);
-    std::cout << "RDTSC: from " << pinned_core << " to " << pinned_core << " : " << time / iterations / ticksPerNanosecond << " ns" << std::endl;
+    std::cout << "RDTSC: from " << pinned_core << " to " << pinned_core << " : " << time << " ns" << std::endl;
+    latency_matrix[pinned_core][pinned_core] = time;
 }
 
 
-void pinned_two_workers(int pinned_core, int that_core) {
+void pinned_two_workers(int pinned_core, int that_core, std::vector<std::vector<double>>& latency_matrix) {
     std::mutex stream_mutex;
     set_affinity(pinned_core);
-    long long time;
+    double time;
     time = measureLatency(that_core);
+    time = time / iterations / ticksPerNanosecond;
     const std::lock_guard<std::mutex> lock(stream_mutex);
-    std::cout << "RDTSC: from " << pinned_core << " to " << that_core << " : " << time / iterations / ticksPerNanosecond << " ns" << std::endl;
+    std::cout << "RDTSC: from " << pinned_core << " to " << that_core << " : " << time << " ns" << std::endl;
+    latency_matrix[pinned_core][that_core] = time;
 }
 
 #endif
@@ -218,49 +224,73 @@ long long measureLatencyStd(int core) {
 }
 
 
-void pinned_worker_std(int pinned_core) {
+void pinned_worker_std(int pinned_core, std::vector<std::vector<double>>& latency_matrix) {
     std::mutex stream_mutex;
     set_affinity(pinned_core);
     double time;
     time = testSingleCoreStd();
+    time /= iterations * 1.0;
     const std::lock_guard<std::mutex> lock(stream_mutex);
-    std::cout << "STD: from " << pinned_core << " to " << pinned_core << " : " << time / iterations * 1.0 << " ns" << std::endl;
+    std::cout << "STD: from " << pinned_core << " to " << pinned_core << " : " << time << " ns" << std::endl;
+    latency_matrix[pinned_core][pinned_core] = time;
 }
 
 
-void pinned_two_workers_std(int pinned_core, int that_core) {
+void pinned_two_workers_std(int pinned_core, int that_core, std::vector<std::vector<double>>& latency_matrix) {
     std::mutex stream_mutex;
     set_affinity(pinned_core);
     double time;
     time = measureLatencyStd(that_core);
+    time /= iterations * 1.0;
     const std::lock_guard<std::mutex> lock(stream_mutex);
-    std::cout << "STD: from " << pinned_core << " to " << that_core << " : " << time / iterations * 1.0 << " ns" << std::endl;
+    std::cout << "STD: from " << pinned_core << " to " << that_core << " : " << time << " ns" << std::endl;
+    latency_matrix[pinned_core][that_core] = time;
 }
 
 
-int main(){
+int main() {
     const int  processor_count = std::thread::hardware_concurrency();
+    std::vector<std::vector<double>> latency_matrix(processor_count, std::vector<double>(processor_count, 0.0));
     set_affinity(0);
     for (int this_core = 0; this_core < processor_count; this_core++) {
         for (int that_core = 0; that_core < processor_count; that_core++) {
             if (this_core != that_core) {
 #if defined _WIN32 
-                pinned_two_workers(this_core, that_core);
+                pinned_two_workers(this_core, that_core, latency_matrix);
 #endif
 #if defined(__linux__) || (defined( _WIN32) && defined(__use_std_timer))
-                pinned_two_workers_std(this_core, that_core);
+                pinned_two_workers_std(this_core, that_core, latency_matrix);
 #endif
             }
             else {
 #if defined(_WIN32) 
-                pinned_worker(this_core);
+                pinned_worker(this_core, latency_matrix);
 #endif
 #if defined(__linux__) || (defined( _WIN32) && defined(__use_std_timer))
-                pinned_worker_std(this_core);
+                pinned_worker_std(this_core, latency_matrix);
 #endif
             }
         }
     }
+
+    std::cout << std::fixed;
+    std::cout << std::setprecision(1);
+
+    // print x axis
+    std::cout << std::setfill(' ') << std::setw(8) << " ";
+    for (int core_idx = 0; core_idx < processor_count; core_idx++) {
+        std::cout << std::setfill(' ') << std::setw(10) << core_idx;
+    }
+    std::cout << std::endl;
+
+    // print cross-core latency
+    for (int this_core_idx = 0; this_core_idx < processor_count; this_core_idx++) {
+        std::cout << std::setfill(' ') << std::setw(8) << this_core_idx;
+        for (int that_core_idx = 0; that_core_idx < processor_count; that_core_idx++) {
+            std::cout << std::setfill(' ') << std::setw(8) << latency_matrix[this_core_idx][that_core_idx] << "ns";
+        }
+        std::cout << std::endl;
+    }
+
     return 0;
 }
-
