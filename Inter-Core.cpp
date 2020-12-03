@@ -21,6 +21,9 @@ int volatile counter = -1;
 #include <x86intrin.h>
 #endif
 
+#define __use_std_timer
+
+
 #pragma intrinsic(__rdtsc)
 
 inline void set_affinity(unsigned int core) {
@@ -221,7 +224,7 @@ void pinned_worker_std(int pinned_core) {
     double time;
     time = testSingleCoreStd();
     const std::lock_guard<std::mutex> lock(stream_mutex);
-    std::cout << "STD: from " << pinned_core << " to " << pinned_core << " : " << time / iterations * 1.0  << " ns" << std::endl;
+    std::cout << "STD: from " << pinned_core << " to " << pinned_core << " : " << time / iterations * 1.0 << " ns" << std::endl;
 }
 
 
@@ -241,16 +244,18 @@ int main(){
     for (int this_core = 0; this_core < processor_count; this_core++) {
         for (int that_core = 0; that_core < processor_count; that_core++) {
             if (this_core != that_core) {
-#ifdef _WIN32
+#if defined _WIN32 
                 pinned_two_workers(this_core, that_core);
-#elif __linux__
+#endif
+#if defined(__linux__) || (defined( _WIN32) && defined(__use_std_timer))
                 pinned_two_workers_std(this_core, that_core);
 #endif
             }
             else {
-#ifdef _WIN32
-                pinned_worker(this_core); 
-#elif __linux__
+#if defined(_WIN32) 
+                pinned_worker(this_core);
+#endif
+#if defined(__linux__) || (defined( _WIN32) && defined(__use_std_timer))
                 pinned_worker_std(this_core);
 #endif
             }

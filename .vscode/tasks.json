@@ -44,29 +44,6 @@
             "group": "build",
             "detail": "Generated task by Debugger"
         },
-        {
-            "type": "cppbuild",
-            "label": "C/C++: gcc-10.1 build active file",
-            "command": "/usr/local/gcc-10.1.0/bin/gcc-10.1",
-            "args": [
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}/${fileBasenameNoExtension}",
-                "-lpthread"
-            ],
-            "options": {
-                "cwd": "/usr/local/gcc-10.1.0/bin"
-            },
-            "problemMatcher": [
-                "$gcc"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "detail": "Generated task by Debugger"
-        }
     ],
     "version": "2.0.0"
 }
