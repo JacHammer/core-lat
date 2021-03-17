@@ -17,10 +17,13 @@ int volatile counter = -1;
 #ifdef _WIN32 
 #include "windows.h"
 #include <intrin.h>
-#elif __linux__
+#elif __linux__ && __amd64__
 #include <pthread.h>
 #include <unistd.h>
 #include <x86intrin.h>
+#elif __linux__ && __arm__
+#include <pthread.h>
+#include <unistd.h>
 #endif
 
 #define __use_std_timer
