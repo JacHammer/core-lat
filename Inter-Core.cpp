@@ -27,10 +27,13 @@ int volatile counter = -1;
 #elif __APPLE__ && __aarch64__  // Apple M1
 #include <pthread.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <mach/thread_policy.h>
+#include <mach/thread_info.h>
 #endif
 
 #define __use_std_timer
-
 
 #pragma intrinsic(__rdtsc)
 
@@ -45,6 +48,7 @@ inline void set_affinity(unsigned int core) {
     CPU_ZERO(&cpuset);
     CPU_SET(core, &cpuset);
     pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+#elif __APPLE_
 #endif
 }
 
@@ -256,7 +260,7 @@ void pinned_two_workers_std(int pinned_core, int that_core, std::vector<std::vec
 
 int main() {
     #if defined (__APPLE__) && defined (__aarch64__)
-    std::cout << "Hello from Apple M1" << std::endl;
+    std::cout << "Hello from Apple M1🤔" << std::endl;
     #endif
     const int  processor_count = std::thread::hardware_concurrency();
     std::vector<std::vector<double>> latency_matrix(processor_count, std::vector<double>(processor_count, 0.0));

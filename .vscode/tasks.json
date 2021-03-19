@@ -30,10 +30,36 @@
             "args": [
                 "-pthread",
                 "-Wall",
-                "-std=c++20",
-                "${file}",
+                "-Wextra",
+                "-std=c++17",
+                "${workspaceFolder}/*.cpp",
+                "-O3",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${workspaceFolder}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "/usr/bin"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Generated task by Debugger"
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: clang build for arm",
+            "command": "/usr/bin/clang++",
+            "args": [
+                "-pthread",
+                "-Wall",
+                "-Wextra",
+                "-std=c++17",
+                "-stdlib=libc++",
+                "${workspaceFolder}/*.cpp",
+                "-O3",
+                "-o",
+                "${workspaceFolder}/${fileBasenameNoExtension}"
             ],
             "options": {
                 "cwd": "/usr/bin"

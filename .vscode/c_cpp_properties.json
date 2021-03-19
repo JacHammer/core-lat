@@ -8,10 +8,25 @@
             "defines": [],
             "compilerPath": "/usr/local/gcc-10.1.0/bin/gcc-10.1",
             "cStandard": "gnu11",
-            "cppStandard": "c++20",
+            "cppStandard": "c++17",
             "intelliSenseMode": "gcc-x64",
             "compilerArgs": [
-                "-lpthread"
+                "-pthread"
+            ]
+        },
+        {
+            "name": "MacOS-arm",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang++",
+            "cStandard": "gnu11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-arm64",
+            "compilerArgs": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks"
             ]
         }
     ],
