@@ -1,6 +1,3 @@
-// Inter-Core.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include <iomanip>
 #include <chrono>
@@ -14,7 +11,7 @@
 const int iterations = 100000000;
 int volatile counter = -1;
 
-#ifdef _WIN32 
+#ifdef _WIN32
 #include "windows.h"
 #include <intrin.h>
 #elif __linux__ && __amd64__
@@ -24,7 +21,7 @@ int volatile counter = -1;
 #elif __linux__ && __arm__
 #include <pthread.h>
 #include <unistd.h>
-#elif __APPLE__ && __aarch64__  // Apple M1
+#elif __APPLE__ && __aarch64__ // Apple M1
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -37,7 +34,8 @@ int volatile counter = -1;
 
 #pragma intrinsic(__rdtsc)
 
-inline void set_affinity(unsigned int core) {
+inline void set_affinity(unsigned int core)
+{
 #ifdef _WIN32
     SetThreadIdealProcessor(GetCurrentThread(), core);
     DWORD_PTR mask = (DWORD_PTR)1 << core;
@@ -52,16 +50,18 @@ inline void set_affinity(unsigned int core) {
 #endif
 }
 
-
-void workThread(int core) {
+void workThread(int core)
+{
     //Lock thread to specified core
     set_affinity(core);
     //Make sure core affinity gets set before continuing
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     //Loop bouncing data back and forth between cores
-    while (counter != 0) {
-        if (counter > 0) {
+    while (counter != 0)
+    {
+        if (counter > 0)
+        {
             counter = -counter + 1;
         }
     }
@@ -69,7 +69,8 @@ void workThread(int core) {
 
 #ifdef _WIN32
 // QPF and QPC works only under win32
-double getTSCTicksPerNanosecond() {
+double getTSCTicksPerNanosecond()
+{
     int sleep_time = 2000;
     //Calculate TSC frequency
     LARGE_INTEGER Frequency;
@@ -108,19 +109,22 @@ double getTSCTicksPerNanosecond() {
     return ticks_per_ns;
 }
 
-
-long long testSingleCore() {
+long long testSingleCore()
+{
     unsigned long long volatile start;
     unsigned long long volatile end;
     counter = -1;
     //Record start time
     start = __rdtsc();
     counter = counter - iterations;
-    while (counter != 0) {
-        if (counter < 0) {
+    while (counter != 0)
+    {
+        if (counter < 0)
+        {
             counter = -counter - 1;
         }
-        else if (counter > 0) {
+        else if (counter > 0)
+        {
             counter = -counter + 1;
         }
     }
@@ -129,8 +133,8 @@ long long testSingleCore() {
     return end - start;
 }
 
-
-long long measureLatency(int core) {
+long long measureLatency(int core)
+{
     unsigned long long volatile start;
     unsigned long long volatile end;
     //Enable counter
@@ -143,8 +147,10 @@ long long measureLatency(int core) {
     start = __rdtsc();
     //Loop bouncing data back and forth between cores
     counter = counter - iterations;
-    while (counter != 0) {
-        if (counter < 0) {
+    while (counter != 0)
+    {
+        if (counter < 0)
+        {
             counter = -counter - 1;
         }
     }
@@ -156,11 +162,10 @@ long long measureLatency(int core) {
     return end - start;
 }
 
-
 auto ticksPerNanosecond = getTSCTicksPerNanosecond();
 
-
-void pinned_worker(int pinned_core, std::vector<std::vector<double>>& latency_matrix) {
+void pinned_worker(int pinned_core, std::vector<std::vector<double>> &latency_matrix)
+{
     std::mutex stream_mutex;
     set_affinity(pinned_core);
     double time;
@@ -171,8 +176,8 @@ void pinned_worker(int pinned_core, std::vector<std::vector<double>>& latency_ma
     latency_matrix[pinned_core][pinned_core] = time;
 }
 
-
-void pinned_two_workers(int pinned_core, int that_core, std::vector<std::vector<double>>& latency_matrix) {
+void pinned_two_workers(int pinned_core, int that_core, std::vector<std::vector<double>> &latency_matrix)
+{
     std::mutex stream_mutex;
     set_affinity(pinned_core);
     double time;
@@ -185,18 +190,21 @@ void pinned_two_workers(int pinned_core, int that_core, std::vector<std::vector<
 
 #endif
 
-
-long long testSingleCoreStd() {
+long long testSingleCoreStd()
+{
     counter = -1;
     //Record start time
     auto start = std::chrono::high_resolution_clock::now();
 
     counter = counter - iterations;
-    while (counter != 0) {
-        if (counter < 0) {
+    while (counter != 0)
+    {
+        if (counter < 0)
+        {
             counter = -counter - 1;
         }
-        else if (counter > 0) {
+        else if (counter > 0)
+        {
             counter = -counter + 1;
         }
     }
@@ -207,8 +215,8 @@ long long testSingleCoreStd() {
     return ns_elapsed;
 }
 
-
-long long measureLatencyStd(int core) {
+long long measureLatencyStd(int core)
+{
     //Enable counter
     counter = -1;
     //Start the far thread
@@ -219,8 +227,10 @@ long long measureLatencyStd(int core) {
     auto start = std::chrono::high_resolution_clock::now();
     //Loop bouncing data back and forth between cores
     counter = counter - iterations;
-    while (counter != 0) {
-        if (counter < 0) {
+    while (counter != 0)
+    {
+        if (counter < 0)
+        {
             counter = -counter - 1;
         }
     }
@@ -233,8 +243,8 @@ long long measureLatencyStd(int core) {
     return ns_elapsed;
 }
 
-
-void pinned_worker_std(int pinned_core, std::vector<std::vector<double>>& latency_matrix) {
+void pinned_worker_std(int pinned_core, std::vector<std::vector<double>> &latency_matrix)
+{
     std::mutex stream_mutex;
     set_affinity(pinned_core);
     double time;
@@ -245,8 +255,8 @@ void pinned_worker_std(int pinned_core, std::vector<std::vector<double>>& latenc
     latency_matrix[pinned_core][pinned_core] = time;
 }
 
-
-void pinned_two_workers_std(int pinned_core, int that_core, std::vector<std::vector<double>>& latency_matrix) {
+void pinned_two_workers_std(int pinned_core, int that_core, std::vector<std::vector<double>> &latency_matrix)
+{
     std::mutex stream_mutex;
     set_affinity(pinned_core);
     double time;
@@ -257,32 +267,36 @@ void pinned_two_workers_std(int pinned_core, int that_core, std::vector<std::vec
     latency_matrix[pinned_core][that_core] = time;
 }
 
-
-int main() {
-    #if defined (__APPLE__) && defined (__aarch64__)
+int main()
+{
+#if defined(__APPLE__) && defined(__aarch64__)
     std::cout << "Hello from Apple M1🤔" << std::endl;
-    #endif
-    const int  processor_count = std::thread::hardware_concurrency();
+#endif
+    const int processor_count = std::thread::hardware_concurrency();
     std::vector<std::vector<double>> latency_matrix(processor_count, std::vector<double>(processor_count, 0.0));
     set_affinity(0);
-    for (int this_core = 0; this_core < processor_count; this_core++) {
-        for (int that_core = 0; that_core < processor_count; that_core++) {
-            if (this_core != that_core) {
-#if defined _WIN32 
+    for (int this_core = 0; this_core < processor_count; this_core++)
+    {
+        for (int that_core = 0; that_core < processor_count; that_core++)
+        {
+            if (this_core != that_core)
+            {
+#if defined _WIN32
                 pinned_two_workers(this_core, that_core, latency_matrix);
 #endif
-#if defined(__linux__) || (defined( _WIN32) && defined(__use_std_timer))
+#if defined(__linux__) || (defined(_WIN32) && defined(__use_std_timer))
                 pinned_two_workers_std(this_core, that_core, latency_matrix);
 #endif
 #if defined(__APPLE__) && defined(__aarch64__)
                 pinned_two_workers_std(this_core, that_core, latency_matrix);
 #endif
             }
-            else {
-#if defined(_WIN32) 
+            else
+            {
+#if defined(_WIN32)
                 pinned_worker(this_core, latency_matrix);
 #endif
-#if defined(__linux__) || (defined( _WIN32) && defined(__use_std_timer))
+#if defined(__linux__) || (defined(_WIN32) && defined(__use_std_timer))
                 pinned_worker_std(this_core, latency_matrix);
 #endif
 #if defined(__APPLE__) && defined(__aarch64__)
@@ -297,15 +311,18 @@ int main() {
 
     // print x axis
     std::cout << std::setfill(' ') << std::setw(8) << " ";
-    for (int core_idx = 0; core_idx < processor_count; core_idx++) {
+    for (int core_idx = 0; core_idx < processor_count; core_idx++)
+    {
         std::cout << std::setfill(' ') << std::setw(10) << core_idx;
     }
     std::cout << std::endl;
 
     // print cross-core latency
-    for (int this_core_idx = 0; this_core_idx < processor_count; this_core_idx++) {
+    for (int this_core_idx = 0; this_core_idx < processor_count; this_core_idx++)
+    {
         std::cout << std::setfill(' ') << std::setw(8) << this_core_idx;
-        for (int that_core_idx = 0; that_core_idx < processor_count; that_core_idx++) {
+        for (int that_core_idx = 0; that_core_idx < processor_count; that_core_idx++)
+        {
             std::cout << std::setfill(' ') << std::setw(8) << latency_matrix[this_core_idx][that_core_idx] << "ns";
         }
         std::cout << std::endl;
