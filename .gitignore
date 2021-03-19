@@ -33,3 +33,8 @@
 
 # Generated executables
 Inter-Core
+a.out
+inter-core
+
+# Darwin
+.DS_Store

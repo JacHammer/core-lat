@@ -24,6 +24,9 @@ int volatile counter = -1;
 #elif __linux__ && __arm__
 #include <pthread.h>
 #include <unistd.h>
+#elif __APPLE__ && __aarch64__  // Apple M1
+#include <pthread.h>
+#include <unistd.h>
 #endif
 
 #define __use_std_timer
@@ -252,6 +255,9 @@ void pinned_two_workers_std(int pinned_core, int that_core, std::vector<std::vec
 
 
 int main() {
+    #if defined (__APPLE__) && defined (__aarch64__)
+    std::cout << "Hello from Apple M1" << std::endl;
+    #endif
     const int  processor_count = std::thread::hardware_concurrency();
     std::vector<std::vector<double>> latency_matrix(processor_count, std::vector<double>(processor_count, 0.0));
     set_affinity(0);
@@ -264,12 +270,18 @@ int main() {
 #if defined(__linux__) || (defined( _WIN32) && defined(__use_std_timer))
                 pinned_two_workers_std(this_core, that_core, latency_matrix);
 #endif
+#if defined(__APPLE__) && defined(__aarch64__)
+                pinned_two_workers_std(this_core, that_core, latency_matrix);
+#endif
             }
             else {
 #if defined(_WIN32) 
                 pinned_worker(this_core, latency_matrix);
 #endif
 #if defined(__linux__) || (defined( _WIN32) && defined(__use_std_timer))
+                pinned_worker_std(this_core, latency_matrix);
+#endif
+#if defined(__APPLE__) && defined(__aarch64__)
                 pinned_worker_std(this_core, latency_matrix);
 #endif
             }
