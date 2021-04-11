@@ -1,6 +1,6 @@
 CXX = clang++
 CXXFLAGS += -Wall -Wextra
-CXXFLAGS += -std=c++2a -pthread -O3
+CXXFLAGS += -std=c++2a -pthread -O2
 OSTYPE?= $(shell uname -s | tr '[:upper:]' '[:lower:]')
 ifneq (,$(findstring linux, $(OSTYPE)))
 	CXX = g++

@@ -26,8 +26,7 @@ int volatile counter = -1;
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
-#include <mach/thread_policy.h>
-#include <mach/thread_info.h>
+#include <sched.h>
 #endif
 
 #define __use_std_timer
@@ -46,8 +45,19 @@ inline void set_affinity(unsigned int core)
     CPU_ZERO(&cpuset);
     CPU_SET(core, &cpuset);
     pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-#elif __APPLE_
-#endif
+#elif __APPLE__
+    struct sched_param this_thread_sched_param;
+    
+    // if this core is 0-3 (efficient cores) then assign it to low priority
+    // if this core is 4-7 (high perf cores) then assign it to high priority
+    if (core < 4) this_thread_sched_param.sched_priority = 0;
+    else if (core > 3) this_thread_sched_param.sched_priority = 99;
+    
+    if (pthread_setschedparam(pthread_self(), SCHED_RR, &this_thread_sched_param)) {
+        std::cout << "failed to get this thread's policy!" << std::endl;
+        exit(1337);
+    }
+    #endif
 }
 
 void workThread(int core)
